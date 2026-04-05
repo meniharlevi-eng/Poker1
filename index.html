@@ -48,6 +48,12 @@ button.danger{background:rgba(251,113,133,.12);border:1px solid rgba(251,113,133
 
 @media (max-width:980px){
   .layout,.form-grid,.player-head,.summary-card,.bit-box{grid-template-columns:1fr}
+  .main-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;overflow:visible;padding-bottom:0}
+  .main-tabs button{width:100%;text-align:center;justify-content:center;font-size:11px;line-height:1.1;padding:9px 8px}
+  .tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;overflow:visible;padding-bottom:0}
+  .tabs button{width:100%;text-align:center;justify-content:center;font-size:12px;line-height:1.1;padding:9px 8px}
+  .help-grid{grid-template-columns:1fr}
+}
   .hero-actions{grid-template-columns:1fr}
   .main-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;overflow:visible;padding-bottom:0}
   .main-tabs button{width:100%;text-align:center;justify-content:center;font-size:11px;line-height:1.1;padding:9px 8px}
@@ -74,6 +80,10 @@ button.danger{background:rgba(251,113,133,.12);border:1px solid rgba(251,113,133
   }
 }
 .main-tabs{margin:0 0 10px 0}
+.help-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.help-box{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:16px}
+.help-box-title{font-weight:800;font-size:18px;margin-bottom:8px}
+.help-box-text{color:var(--muted);line-height:1.8}
 .main-tabs button,.tabs button{font-size:11px;line-height:1.1;
   min-height:auto;padding:9px 11px;border-radius:999px;white-space:nowrap;flex:0 0 auto;
   background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12)
@@ -184,6 +194,7 @@ html[dir="ltr"] .main-tabs, html[dir="ltr"] .tabs, html[dir="ltr"] .quick-action
     <button id="mainTabSummary" onclick="switchMainTab('summary')">📊 סיכום</button>
     <button id="mainTabBit" onclick="switchMainTab('bit')">💸 העברות</button>
     <button id="mainTabSettings" onclick="switchMainTab('settings')">⚙️ הגדרות</button>
+    <button id="mainTabHelp" onclick="switchMainTab('help')">❓ עזרה</button>
   </div>
 
 
@@ -344,6 +355,62 @@ html[dir="ltr"] .main-tabs, html[dir="ltr"] .tabs, html[dir="ltr"] .quick-action
   </div>
 
 
+  <div id="mainSectionHelp" class="main-section">
+    <section class="card">
+      <div class="card-inner">
+        <div class="card-title" id="helpTitle">❓ מרכז עזרה</div>
+        <div class="meta-label" id="helpSubtitle" style="margin-bottom:12px">כל מה שצריך כדי להשתמש נכון ב־ChipSplit במקום אחד</div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:14px">
+      <div class="card-inner">
+        <div class="help-grid">
+          <div class="help-box">
+            <div class="help-box-title">⚙️ הגדרות לפני תחילת המשחק</div>
+            <div class="help-box-text">עבור ללשונית הגדרות, קבע כמה צ׳יפים שווים כמה מזומן, ובחר מטבע. כל החישובים באפליקציה יתבססו על ההגדרות האלו.</div>
+          </div>
+
+          <div class="help-box">
+            <div class="help-box-title">👥 הוספת שחקנים</div>
+            <div class="help-box-text">בלשונית שחקנים אפשר להוסיף שחקנים קבועים לשימוש עתידי או שחקן אורח למשחק הנוכחי, ואז להוסיף אותם למשחק בלחיצה.</div>
+          </div>
+
+          <div class="help-box">
+            <div class="help-box-title">🎮 ניהול המשחק</div>
+            <div class="help-box-text">בוחרים שחקן ומוסיפים כניסות בסכומים קבועים או בסכום מותאם. האפליקציה מציגה גם כמה צ׳יפים השחקן אמור לקבל.</div>
+          </div>
+
+          <div class="help-box">
+            <div class="help-box-title">🧮 סיום המשחק</div>
+            <div class="help-box-text">בסיום מזינים לכל שחקן את כמות הצ׳יפים הסופית ואת כמות המזומן שקיבל בפועל. האפליקציה ממירה את הצ׳יפים למזומן ומחשבת את התוצאה הסופית.</div>
+          </div>
+
+          <div class="help-box">
+            <div class="help-box-title">📊 סיכום לפי שחקן</div>
+            <div class="help-box-text">בלשונית סיכום אפשר לראות כמה כל שחקן השקיע, כמה סיים, מה הרווח או ההפסד שלו, וכמה כבר נסגר במזומן.</div>
+          </div>
+
+          <div class="help-box">
+            <div class="help-box-title">💸 העברות</div>
+            <div class="help-box-text">בלשונית העברות מוצג מי צריך להעביר למי וכמה. רק שחקנים מפסידים משלמים, ורק שחקנים מרוויחים מקבלים.</div>
+          </div>
+
+          <div class="help-box">
+            <div class="help-box-title">📲 מה נשאר להסדיר באפליקציה</div>
+            <div class="help-box-text">אם שחקן קיבל רק חלק מהסכום במזומן, האפליקציה מחשבת כמה עוד נשאר לו לקבל דרך אפליקציה.</div>
+          </div>
+
+          <div class="help-box">
+            <div class="help-box-title">💡 טיפ חשוב</div>
+            <div class="help-box-text">הגדר את יחס הצ׳יפים פעם אחת לפני תחילת המשחק. כך כל החישובים לאורך הערב יהיו מדויקים, ברורים ואוטומטיים.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+
 <script>
 const STORAGE_KEY = "poker-tabs-main-v2";
 const PRESET_PLAYERS = [];
@@ -384,11 +451,13 @@ const els = {
   mainTabSummary: document.getElementById("mainTabSummary"),
   mainTabBit: document.getElementById("mainTabBit"),
   mainTabSettings: document.getElementById("mainTabSettings"),
+  mainTabHelp: document.getElementById("mainTabHelp"),
   mainSectionGame: document.getElementById("mainSectionGame"),
   mainSectionPresets: document.getElementById("mainSectionPresets"),
   mainSectionSummary: document.getElementById("mainSectionSummary"),
   mainSectionBit: document.getElementById("mainSectionBit"),
-  mainSectionSettings: document.getElementById("mainSectionSettings")
+  mainSectionSettings: document.getElementById("mainSectionSettings"),
+  mainSectionHelp: document.getElementById("mainSectionHelp")
 };
 
 const defaultState = {
@@ -499,6 +568,9 @@ const I18N = {
     summary_tab: "📊 סיכום",
     bit_tab: "💸 העברות",
     settings_tab: "⚙️ הגדרות",
+    help_tab: "❓ עזרה",
+    help_title: "❓ מרכז עזרה",
+    help_subtitle: "כל מה שצריך כדי להשתמש נכון ב־ChipSplit במקום אחד",
     game_title: "🎮 משחק",
     players_title: "👥 שחקנים",
     summary_title: "📊 סיכום לפי שחקן",
@@ -584,6 +656,9 @@ const I18N = {
     summary_tab: "📊 Summary",
     bit_tab: "💸 Transfers",
     settings_tab: "⚙️ Settings",
+    help_tab: "❓ Help",
+    help_title: "❓ Help Center",
+    help_subtitle: "Everything you need to use ChipSplit correctly in one place",
     game_title: "🎮 Game",
     players_title: "👥 Players",
     summary_title: "📊 Player summary",
@@ -682,6 +757,7 @@ function applyLanguageShell(){
   els.mainTabSummary.textContent = t("summary_tab");
   els.mainTabBit.textContent = t("bit_tab");
   if (els.mainTabSettings) els.mainTabSettings.textContent = t("settings_tab");
+  if (els.mainTabHelp) els.mainTabHelp.textContent = t("help_tab");
 
   if (els.currencyLabel) els.currencyLabel.textContent = t("currency");
   const chipWorthLabel = document.getElementById("chipWorthLabel");
@@ -707,6 +783,8 @@ function applyLanguageShell(){
   if (summaryTitle) summaryTitle.textContent = t("summary_title");
   const settingsTitle = document.getElementById("settingsTitle"); if (settingsTitle) settingsTitle.textContent = t("settings_title");
   const settingsHelp = document.getElementById("settingsHelp"); if (settingsHelp) settingsHelp.textContent = t("settings_help");
+  const helpTitle = document.getElementById("helpTitle"); if (helpTitle) helpTitle.textContent = t("help_title");
+  const helpSubtitle = document.getElementById("helpSubtitle"); if (helpSubtitle) helpSubtitle.textContent = t("help_subtitle");
 
   const bitTitles = document.querySelectorAll('#mainSectionBit .card-title');
   if (bitTitles[0]) bitTitles[0].textContent = t("bit_title");
@@ -850,11 +928,13 @@ function switchMainTab(tab){
   els.mainTabSummary.classList.toggle("active", tab==="summary");
   els.mainTabBit.classList.toggle("active", tab==="bit");
   if (els.mainTabSettings) els.mainTabSettings.classList.toggle("active", tab==="settings");
+  if (els.mainTabHelp) els.mainTabHelp.classList.toggle("active", tab==="help");
   els.mainSectionGame.classList.toggle("active", tab==="game");
   els.mainSectionPresets.classList.toggle("active", tab==="presets");
   els.mainSectionSummary.classList.toggle("active", tab==="summary");
   els.mainSectionBit.classList.toggle("active", tab==="bit");
   if (els.mainSectionSettings) els.mainSectionSettings.classList.toggle("active", tab==="settings");
+  if (els.mainSectionHelp) els.mainSectionHelp.classList.toggle("active", tab==="help");
   saveState();
 }
 
