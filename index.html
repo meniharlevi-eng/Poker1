@@ -44,6 +44,19 @@ button.danger{background:rgba(251,113,133,.12);border:1px solid rgba(251,113,133
 }
 .top-stats .chip{padding:7px 9px;border-radius:999px;background:rgba(255,255,255,.08);font-size:12px;color:var(--muted)}
 .main-tabs,.tabs{display:flex;gap:8px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:6px}
+.main-tabs button,.tabs button{white-space:nowrap}
+
+@media (max-width:980px){
+  .layout,.form-grid,.player-head,.summary-card,.bit-box{grid-template-columns:1fr}
+  .hero-actions{grid-template-columns:1fr}
+  .main-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;overflow:visible;padding-bottom:0}
+  .main-tabs button{width:100%;text-align:center;justify-content:center;font-size:11px;line-height:1.1;padding:9px 8px}
+  .tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;overflow:visible;padding-bottom:0}
+  .tabs button{width:100%;text-align:center;justify-content:center;font-size:12px;line-height:1.1;padding:9px 8px}
+  #chipWorthGrid{grid-template-columns:1fr !important}
+  #chipWorthGrid span{text-align:center}
+}
+
 @media (max-width: 900px){
   #playerTabs.tabs{
     display:grid !important;
@@ -139,6 +152,8 @@ html[dir="ltr"] .main-tabs, html[dir="ltr"] .tabs, html[dir="ltr"] .quick-action
 
 @media (max-width:980px){
   .layout,.form-grid,.player-head,.summary-card,.bit-box{grid-template-columns:1fr}
+  #chipWorthGrid{grid-template-columns:1fr !important}
+  #chipWorthGrid span{text-align:center}
   .preset-row{grid-template-columns:1fr 1fr 72px}
 }
 </style>
@@ -161,23 +176,26 @@ html[dir="ltr"] .main-tabs, html[dir="ltr"] .tabs, html[dir="ltr"] .quick-action
   </section>
 
   <div id="topStats" class="top-stats"></div>
-<div class="card" style="margin-bottom:10px"><div class="card-inner" style="padding:12px"><div class="field"><label id="currencyLabel">מטבע</label><select id="currencySelect"><option value="ILS">₪ ILS</option><option value="USD">$ USD</option><option value="EUR">€ EUR</option><option value="GBP">£ GBP</option></select></div></div></div>
+
 
   <div class="main-tabs">
     <button id="mainTabGame" class="active" onclick="switchMainTab('game')">🎮 משחק</button>
     <button id="mainTabPresets" onclick="switchMainTab('presets')">👥 שחקנים</button>
     <button id="mainTabSummary" onclick="switchMainTab('summary')">📊 סיכום</button>
     <button id="mainTabBit" onclick="switchMainTab('bit')">💸 העברות</button>
+    <button id="mainTabSettings" onclick="switchMainTab('settings')">⚙️ הגדרות</button>
   </div>
+
 
   <div id="mainSectionGame" class="main-section active">
     <div class="layout">
       <div class="stack">
         <section class="card">
           <div class="card-inner">
-            <div class="card-title">🎮 משחק</div><div class="meta-label" style="margin-bottom:8px"></div>
+            <div class="card-title">🎮 משחק</div>
+            <div class="meta-label" style="margin-bottom:8px"></div>
             <div class="field">
-              <label for="gameName">שם המשחק</label>
+              <label for="gameName" id="gameNameLabel">שם המשחק</label>
               <input id="gameName" placeholder="שם המשחק">
             </div>
           </div>
@@ -280,19 +298,51 @@ html[dir="ltr"] .main-tabs, html[dir="ltr"] .tabs, html[dir="ltr"] .quick-action
   <div id="mainSectionBit" class="main-section">
     <section class="card" style="margin-bottom:14px">
       <div class="card-inner">
-        <div class="card-title">💸 סיכום העברות ביט</div>
+        <div class="card-title">💸 סיכום העברות אפליקציה</div>
         <div id="bitTransfers" class="bit-grid" style="display:grid"></div>
       </div>
     </section>
 
     <section class="card">
       <div class="card-inner">
-        <div class="card-title">📲 כמה כל שחקן עוד צריך לקבל בביט</div>
+        <div class="card-title">📲 כמה כל שחקן עוד צריך לקבל דרך אפליקציה</div>
         <div id="bitOutstanding" class="bit-grid" style="display:grid"></div>
       </div>
     </section>
   </div>
-</div>
+
+  <div id="mainSectionSettings" class="main-section">
+    <section class="card">
+      <div class="card-inner">
+        <div class="card-title" id="settingsTitle">⚙️ הגדרות</div>
+        <div class="meta-label" id="settingsHelp" style="margin-bottom:12px">הגדר פעם אחת לפני תחילת המשחק</div>
+
+        <div class="field" style="margin-bottom:16px">
+          <label id="chipWorthLabel">כמה צ׳יפים שווים כמה מזומן?</label>
+          <div id="chipWorthGrid" style="display:grid;grid-template-columns:1fr auto 1fr auto;gap:8px;align-items:center">
+            <input id="chipsValue" type="number" min="1" step="1" value="1000" placeholder="1000">
+            <span id="chipsText">צ׳יפים =</span>
+            <input id="cashValue" type="number" min="0.01" step="0.01" value="50" placeholder="50">
+            <span id="currencyPreview">₪</span>
+          </div>
+          <div id="chipRatioHelp" class="meta-label" style="margin-top:6px">הכנס כמה צ׳יפים שווים כמה מזומן, והמערכת תחשב את יחס ההמרה אוטומטית</div>
+          <div id="chipRatioPreview" class="meta-label" style="margin-top:6px"></div>
+          <input id="chipRatio" type="hidden" value="20">
+        </div>
+
+        <div class="field">
+          <label id="currencyLabel">מטבע</label>
+          <select id="currencySelect">
+            <option value="ILS">₪ ILS</option>
+            <option value="USD">$ USD</option>
+            <option value="EUR">€ EUR</option>
+            <option value="GBP">£ GBP</option>
+          </select>
+        </div>
+      </div>
+    </section>
+  </div>
+
 
 <script>
 const STORAGE_KEY = "poker-tabs-main-v2";
@@ -302,6 +352,10 @@ const els = {
   topStats: document.getElementById("topStats"),
   currencySelect: document.getElementById("currencySelect"),
   gameName: document.getElementById("gameName"),
+  chipRatio: document.getElementById("chipRatio"),
+  chipsValue: document.getElementById("chipsValue"),
+  cashValue: document.getElementById("cashValue"),
+  currencyPreview: document.getElementById("currencyPreview"),
   newPlayerName: document.getElementById("newPlayerName"),
   defaultBuyIn: document.getElementById("defaultBuyIn"),
   defaultBuyInMethod: document.getElementById("defaultBuyInMethod"),
@@ -329,10 +383,12 @@ const els = {
   mainTabPresets: document.getElementById("mainTabPresets"),
   mainTabSummary: document.getElementById("mainTabSummary"),
   mainTabBit: document.getElementById("mainTabBit"),
+  mainTabSettings: document.getElementById("mainTabSettings"),
   mainSectionGame: document.getElementById("mainSectionGame"),
   mainSectionPresets: document.getElementById("mainSectionPresets"),
   mainSectionSummary: document.getElementById("mainSectionSummary"),
-  mainSectionBit: document.getElementById("mainSectionBit")
+  mainSectionBit: document.getElementById("mainSectionBit"),
+  mainSectionSettings: document.getElementById("mainSectionSettings")
 };
 
 const defaultState = {
@@ -344,6 +400,9 @@ const defaultState = {
   mainTab: "game",
   language: "he",
   currency: "ILS",
+  chipRatio: 20,
+  chipsValue: "1000",
+  cashValue: "50",
   customPresets: [],
   players: []
 };
@@ -367,11 +426,15 @@ function loadState(){
       mainTab: parsed.mainTab || "game",
       language: parsed.language || "he",
       currency: parsed.currency || "ILS",
+      chipRatio: Number(parsed.chipRatio) > 0 ? Number(parsed.chipRatio) : 20,
+      chipsValue: (parsed.chipsValue !== undefined && parsed.chipsValue !== null && parsed.chipsValue !== "") ? String(parsed.chipsValue) : "1000",
+      cashValue: (parsed.cashValue !== undefined && parsed.cashValue !== null && parsed.cashValue !== "") ? String(parsed.cashValue) : "50",
       customPresets: Array.isArray(parsed.customPresets) ? parsed.customPresets.map((p)=>({name:p.name||"", method:p.method==="bit"?"bit":"cash"})).filter((p)=>p.name) : [],
       players: parsed.players.map((p) => ({
         id: p.id || crypto.randomUUID(),
         name: p.name || "שחקן",
         buyIns: Array.isArray(p.buyIns) ? p.buyIns.map((b) => ({ amount: Number(b.amount) || 0, method: b.method === "bit" ? "bit" : "cash" })) : [],
+        finalChips: p.finalChips === "" ? "" : (p.finalChips == null ? ((p.cashOut === "" ? "" : (Number(p.cashOut) || 0) * (Number(parsed.chipRatio) > 0 ? Number(parsed.chipRatio) : 1))) : (Number(p.finalChips) || 0)),
         cashOut: p.cashOut === "" ? "" : Number(p.cashOut) || 0,
         finalCash: Number(p.finalCash) || 0
       }))
@@ -390,6 +453,21 @@ function formatCurrency(v){
 function escapeHtml(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"); }
 function totalBuyIn(p){ return p.buyIns.reduce((s,b)=>s+b.amount,0); }
 function totalByMethod(p,m){ return p.buyIns.filter((b)=>b.method===m).reduce((s,b)=>s+b.amount,0); }
+function chipsToCash(chips){
+  const ratio = Number(state.chipRatio) > 0 ? Number(state.chipRatio) : 1;
+  return (Number(chips) || 0) / ratio;
+}
+function cashToChips(cash){
+  const ratio = Number(state.chipRatio) > 0 ? Number(state.chipRatio) : 1;
+  return (Number(cash) || 0) * ratio;
+}
+function currencySymbol(){
+  const c = state.currency || "ILS";
+  if(c === "USD") return "$";
+  if(c === "EUR") return "€";
+  if(c === "GBP") return "£";
+  return "₪";
+}
 function netResult(p){ return p.cashOut === "" ? null : (Number(p.cashOut)||0) - totalBuyIn(p); }
 function remainingBit(p){
   if(p.cashOut === "") return null;
@@ -420,14 +498,24 @@ const I18N = {
     players_tab: "👥 שחקנים",
     summary_tab: "📊 סיכום",
     bit_tab: "💸 העברות",
+    settings_tab: "⚙️ הגדרות",
     game_title: "🎮 משחק",
     players_title: "👥 שחקנים",
     summary_title: "📊 סיכום לפי שחקן",
     bit_title: "💸 סיכום העברות באפליקציה",
+    settings_title: "⚙️ הגדרות",
+    settings_help: "הגדר פעם אחת לפני תחילת המשחק",
     bit_out_title: "📲 כמה כל שחקן עוד צריך לקבל דרך אפליקציה",
     pot_title: "💰 פילוח קופה",
     checks_title: "✅ בדיקות",
     game_name: "שם המשחק",
+    chip_ratio: "יחס צ'יפים למזומן",
+    chip_worth: "כמה צ׳יפים שווים כמה מזומן?",
+    chips_equals_cash: "צ׳יפים =",
+    chip_ratio_help: "הכנס כמות צ׳יפים וכמות מזומן, והמערכת תחשב את יחס ההמרה אוטומטית",
+    chip_ratio_preview: "1 {currency} = {ratio} צ׳יפים",
+    final_chips: "סכום סופי בצ'יפים",
+    converted_final_amount: "סכום סופי במזומן",
     new_player: "שחקן אורח",
     initial_buyin: "כניסה התחלתית",
     method: "אמצעי",
@@ -444,6 +532,9 @@ const I18N = {
     cash: "מזומן",
     app: "אפליקציה",
     players: "שחקנים",
+    total_chips: "סה״כ צ׳יפים",
+    chips_word: "צ׳יפים",
+    buyin_chips_est: "יקבל בערך",
     pot: "קופה",
     final: "סופי",
     open: "פתוח",
@@ -492,14 +583,24 @@ const I18N = {
     players_tab: "👥 Players",
     summary_tab: "📊 Summary",
     bit_tab: "💸 Transfers",
+    settings_tab: "⚙️ Settings",
     game_title: "🎮 Game",
     players_title: "👥 Players",
     summary_title: "📊 Player summary",
     bit_title: "💸 App transfer summary",
+    settings_title: "⚙️ Settings",
+    settings_help: "Set this once before the game starts",
     bit_out_title: "📲 App amount left to receive per player",
     pot_title: "💰 Pot breakdown",
     checks_title: "✅ Checks",
     game_name: "Game name",
+    chip_ratio: "Chip-to-cash ratio",
+    chip_worth: "How many chips equal how much cash?",
+    chips_equals_cash: "chips =",
+    chip_ratio_help: "Enter the chip amount and the cash amount, and the app will calculate the conversion ratio automatically",
+    chip_ratio_preview: "1 {currency} = {ratio} chips",
+    final_chips: "Final chips amount",
+    converted_final_amount: "Final cash value",
     new_player: "Guest player",
     initial_buyin: "Initial buy-in",
     method: "Method",
@@ -516,6 +617,9 @@ const I18N = {
     cash: "Cash",
     app: "App",
     players: "players",
+    total_chips: "Total chips",
+    chips_word: "chips",
+    buyin_chips_est: "Will receive about",
     pot: "Pot",
     final: "Final",
     open: "Open",
@@ -577,8 +681,13 @@ function applyLanguageShell(){
   els.mainTabPresets.textContent = t("players_tab");
   els.mainTabSummary.textContent = t("summary_tab");
   els.mainTabBit.textContent = t("bit_tab");
+  if (els.mainTabSettings) els.mainTabSettings.textContent = t("settings_tab");
 
   if (els.currencyLabel) els.currencyLabel.textContent = t("currency");
+  const chipWorthLabel = document.getElementById("chipWorthLabel");
+  if (chipWorthLabel) chipWorthLabel.textContent = t("chip_worth");
+  const chipsText = document.getElementById("chipsText");
+  if (chipsText) chipsText.textContent = t("chips_equals_cash");
   if (els.currencySelect) els.currencySelect.setAttribute("aria-label", t("currency"));
 
   const gameTitles = document.querySelectorAll('#mainSectionGame .card-title');
@@ -596,6 +705,8 @@ function applyLanguageShell(){
 
   const summaryTitle = document.querySelector('#mainSectionSummary .card-title');
   if (summaryTitle) summaryTitle.textContent = t("summary_title");
+  const settingsTitle = document.getElementById("settingsTitle"); if (settingsTitle) settingsTitle.textContent = t("settings_title");
+  const settingsHelp = document.getElementById("settingsHelp"); if (settingsHelp) settingsHelp.textContent = t("settings_help");
 
   const bitTitles = document.querySelectorAll('#mainSectionBit .card-title');
   if (bitTitles[0]) bitTitles[0].textContent = t("bit_title");
@@ -624,12 +735,16 @@ function applyLanguageShell(){
   labels.forEach((label) => {
     const target = label.getAttribute("for") || "";
     if (target === "gameName") label.textContent = t("game_name");
+    if (target === "chipRatio") label.textContent = t("chip_ratio");
     if (target === "newPlayerName") label.textContent = t("new_player");
     if (target === "defaultBuyIn") label.textContent = t("initial_buyin");
     if (target === "defaultBuyInMethod") label.textContent = t("method");
     if (target === "newPresetName") label.textContent = t("new_saved_player");
     if (target === "newPresetMethod") label.textContent = t("default_method");
   });
+  const chipRatioHelp = document.getElementById("chipRatioHelp");
+  if (chipRatioHelp) chipRatioHelp.textContent = t("chip_ratio_help");
+  if (els.currencyPreview) els.currencyPreview.textContent = currencySymbol();
 
   if (els.gameName) els.gameName.placeholder = t("game_name");
   if (els.newPlayerName) els.newPlayerName.placeholder = t("new_player");
@@ -734,10 +849,12 @@ function switchMainTab(tab){
   els.mainTabPresets.classList.toggle("active", tab==="presets");
   els.mainTabSummary.classList.toggle("active", tab==="summary");
   els.mainTabBit.classList.toggle("active", tab==="bit");
+  if (els.mainTabSettings) els.mainTabSettings.classList.toggle("active", tab==="settings");
   els.mainSectionGame.classList.toggle("active", tab==="game");
   els.mainSectionPresets.classList.toggle("active", tab==="presets");
   els.mainSectionSummary.classList.toggle("active", tab==="summary");
   els.mainSectionBit.classList.toggle("active", tab==="bit");
+  if (els.mainSectionSettings) els.mainSectionSettings.classList.toggle("active", tab==="settings");
   saveState();
 }
 
@@ -751,9 +868,11 @@ function renderTopStats(){
   const potApp = state.players.reduce((s,p)=>s+totalByMethod(p,"bit"),0);
   const totalIn = state.players.reduce((s,p)=>s+totalBuyIn(p),0);
   const totalOut = state.players.reduce((s,p)=>s+(p.cashOut===""?0:Number(p.cashOut)||0),0);
+  const totalChips = Math.round(cashToChips(totalIn));
 
   els.topStats.innerHTML = `
     <div class="chip">👥 ${state.players.length} ${t("players")}</div>
+    <div class="chip">🎲 ${t("total_chips")} ${totalChips.toLocaleString()}</div>
     <div class="chip">💰 ${t("pot")} ${formatCurrency(totalIn)}</div>
     <div class="chip">💵 ${t("cash")} ${formatCurrency(potCash)}</div>
     <div class="chip">📲 ${t("app")} ${formatCurrency(potApp)}</div>
@@ -776,6 +895,10 @@ function renderPlayerView(filtered){
   const net = netResult(player);
   const finalCash = Number(player.finalCash)||0;
   const appLeft = remainingBit(player);
+  const finalChips = player.finalChips === "" ? "" : Number(player.finalChips)||0;
+  const chips50 = Math.round(cashToChips(50));
+  const chips100 = Math.round(cashToChips(100));
+  const chips200 = Math.round(cashToChips(200));
 
   els.playerView.innerHTML = `
     <div class="player-card">
@@ -797,7 +920,7 @@ function renderPlayerView(filtered){
       <div class="player-body">
         <div class="chips">
           ${player.buyIns.length
-            ? player.buyIns.map((b,i)=>`<span class="chip">${t("buyin")} ${i+1}: ${formatCurrency(b.amount)} • ${b.method==="bit"?t("app"):t("cash")}</span>`).join("")
+            ? player.buyIns.map((b,i)=>`<span class="chip">${t("buyin")} ${i+1}: ${formatCurrency(b.amount)} • ${b.method==="bit"?t("app"):t("cash")} • ${Math.round(cashToChips(b.amount)).toLocaleString()} ${t("chips_word")}</span>`).join("")
             : `<span class="chip">${t("no_buyins")}</span>`}
         </div>
 
@@ -814,6 +937,12 @@ function renderPlayerView(filtered){
         </div>
 
         <div class="chips">
+          <span class="chip">50 → ${chips50.toLocaleString()} ${t("chips_word")}</span>
+          <span class="chip">100 → ${chips100.toLocaleString()} ${t("chips_word")}</span>
+          <span class="chip">200 → ${chips200.toLocaleString()} ${t("chips_word")}</span>
+        </div>
+
+        <div class="chips">
           <span class="chip">${t("app")}: ${formatCurrency(totalByMethod(player,"bit"))}</span>
           <span class="chip">${t("cash")}: ${formatCurrency(totalByMethod(player,"cash"))}</span>
           ${player.cashOut==="" ? "" : `<span class="chip">${t("app_left")}: ${formatCurrency(appLeft)}</span>`}
@@ -821,9 +950,13 @@ function renderPlayerView(filtered){
 
         <div class="form-grid">
           <div class="field">
-            <label>${t("final_amount")}</label>
-            <input type="number" value="${cashOut===""?"":cashOut}" placeholder="0" ${state.gameFinished?"disabled":""}
-              onchange="updateCashOut('${player.id}', this.value)" onblur="updateCashOut('${player.id}', this.value)">
+            <label>${t("final_chips")}</label>
+            <input type="number" value="${finalChips}" placeholder="0" ${state.gameFinished?"disabled":""}
+              onchange="updateFinalChips('${player.id}', this.value)" onblur="updateFinalChips('${player.id}', this.value)">
+          </div>
+          <div class="field">
+            <label>${t("converted_final_amount")}</label>
+            <input type="text" value="${cashOut===""?"":formatCurrency(cashOut)}" placeholder="-" readonly>
           </div>
           <div class="field">
             <label>${t("final_cash")}</label>
@@ -892,6 +1025,21 @@ function render(){
   const gh = document.getElementById("gameHelperText"); if (gh) gh.textContent = t("game_helper");
   els.gameName.value = state.gameName;
   if (els.currencySelect) els.currencySelect.value = state.currency || "ILS";
+  if (els.chipRatio) els.chipRatio.value = Number(state.chipRatio) > 0 ? state.chipRatio : 1;
+  if (els.chipsValue && els.cashValue){
+    const ratio = Number(state.chipRatio) > 0 ? Number(state.chipRatio) : 20;
+    const chipsVal = (state.chipsValue !== undefined && state.chipsValue !== null && state.chipsValue !== "") ? state.chipsValue : 1000;
+    const cashVal = (state.cashValue !== undefined && state.cashValue !== null && state.cashValue !== "") ? state.cashValue : Math.round((Number(chipsVal) / ratio) * 100) / 100;
+    if (document.activeElement !== els.chipsValue) els.chipsValue.value = chipsVal;
+    if (document.activeElement !== els.cashValue) els.cashValue.value = cashVal;
+  }
+  const previewEl = document.getElementById("chipRatioPreview");
+  if (previewEl) {
+    const txt = t("chip_ratio_preview")
+      .replace("{currency}", currencySymbol())
+      .replace("{ratio}", String(Math.round((Number(state.chipRatio)||1) * 100) / 100));
+    previewEl.textContent = txt;
+  }
   els.defaultBuyIn.value = state.defaultBuyIn;
   els.defaultBuyInMethod.value = state.defaultBuyInMethod;
 
@@ -997,14 +1145,20 @@ function addBuyIn(id, amount){
 }
 function addCustomBuyIn(id){
   if(state.gameFinished) return;
-  const value = prompt(t("enter_amount"));
+  const value = prompt(`${t("enter_amount")} (${t("buyin_chips_est")} ${Math.round(cashToChips(100)).toLocaleString()} ${t("chips_word")} לכל 100)`);
   const amount = Number(value);
   if(!Number.isFinite(amount) || amount<=0) return;
   addBuyIn(id, amount);
 }
 function updateCashOut(id, value){
   if(state.gameFinished) return;
-  state.players = state.players.map((p)=>p.id===id ? {...p, cashOut:value===""?"":Number(value)||0} : p);
+  state.players = state.players.map((p)=>p.id===id ? {...p, cashOut:value===""?"":Number(value)||0, finalChips:value===""?"":cashToChips(Number(value)||0)} : p);
+  state.activePlayerId = id;
+  render();
+}
+function updateFinalChips(id, value){
+  if(state.gameFinished) return;
+  state.players = state.players.map((p)=>p.id===id ? {...p, finalChips:value===""?"":Number(value)||0, cashOut:value===""?"":chipsToCash(Number(value)||0)} : p);
   state.activePlayerId = id;
   render();
 }
@@ -1058,6 +1212,44 @@ els.gameName.addEventListener("change", (e)=>{ state.gameName = e.target.value; 
 els.gameName.addEventListener("blur", (e)=>{ state.gameName = e.target.value; render(); });
 els.defaultBuyIn.addEventListener("input", (e)=>{ state.defaultBuyIn = Number(e.target.value)||0; saveState(); });
 els.defaultBuyInMethod.addEventListener("change", (e)=>{ state.defaultBuyInMethod = e.target.value==="bit"?"bit":"cash"; saveState(); });
+function updateChipRatioFromPair(){
+  const chipsRaw = els.chipsValue ? els.chipsValue.value : "";
+  const cashRaw = els.cashValue ? els.cashValue.value : "";
+
+  // Keep what the user typed in state so render won't snap back.
+  state.chipsValue = chipsRaw;
+  state.cashValue = cashRaw;
+
+  const chips = Number(chipsRaw);
+  const cash = Number(cashRaw);
+
+  if (chips > 0 && cash > 0) {
+    state.chipRatio = chips / cash;
+    if (els.chipRatio) els.chipRatio.value = state.chipRatio;
+
+    state.players = state.players.map((p)=>({
+      ...p,
+      cashOut: p.finalChips === "" ? p.cashOut : chipsToCash(Number(p.finalChips)||0)
+    }));
+  }
+
+  saveState();
+
+  const previewEl = document.getElementById("chipRatioPreview");
+  if (previewEl) {
+    const ratio = Number(state.chipRatio) > 0 ? state.chipRatio : 20;
+    const txt = t("chip_ratio_preview")
+      .replace("{currency}", currencySymbol())
+      .replace("{ratio}", String(Math.round(ratio * 100) / 100));
+    previewEl.textContent = txt;
+  }
+
+  renderPlayerView(state.players.filter((p)=>p.name.toLowerCase().includes((els.playerSearch?.value || "").toLowerCase())));
+  renderSummary();
+  renderBit();
+}
+if (els.chipsValue) els.chipsValue.addEventListener("input", updateChipRatioFromPair);
+if (els.cashValue) els.cashValue.addEventListener("input", updateChipRatioFromPair);
 if (els.currencySelect) els.currencySelect.addEventListener("change", (e)=>{ state.currency = e.target.value || "ILS"; render(); });
 
 render();
