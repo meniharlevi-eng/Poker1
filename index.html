@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ChipSplit</title>
+<meta name="theme-color" content="#111827">
+<style>
+:root{
+  --bg1:#091225; --bg2:#111827; --card:rgba(255,255,255,.08); --card2:rgba(255,255,255,.05);
+  --border:rgba(255,255,255,.12); --text:#f8fafc; --muted:#cbd5e1; --soft:#94a3b8;
+  --accent:#22c55e; --accent2:#16a34a; --good:#4ade80; --bad:#fb7185; --warn:#fbbf24;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:Arial,sans-serif;color:var(--text);
+  background:
+    radial-gradient(circle at top right, rgba(34,197,94,.18), transparent 24%),
+    radial-gradient(circle at top left, rgba(59,130,246,.16), transparent 25%),
+    linear-gradient(180deg,var(--bg1),var(--bg2) 45%,#0f172a 100%);
+  min-height:100vh
+}
+.container{max-width:1100px;margin:0 auto;padding:10px 10px 64px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:22px}
+.card-inner{padding:16px}
+h1,h2,p{margin:0}
+.hero{padding:16px;margin:8px 0 10px}
+.hero-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.eyebrow{display:inline-flex;align-items:center;padding:8px 12px;border-radius:999px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.18);font-size:13px}
+h1{font-size:24px;margin-top:8px}
+.hero-actions{display:flex;gap:8px;flex-wrap:wrap}
+button{
+  border:0;border-radius:14px;padding:12px 14px;cursor:pointer;color:#fff;
+  background:linear-gradient(180deg,var(--accent),var(--accent2));font-size:14px;font-weight:700;min-height:44px
+}
+button.secondary{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:var(--text)}
+button.warning{background:rgba(251,191,36,.16);color:#fde68a;border:1px solid rgba(251,191,36,.24)}
+button.danger{background:rgba(251,113,133,.12);border:1px solid rgba(251,113,133,.24);color:#fecdd3;min-height:auto;padding:10px 12px}
+.top-stats{
+  position:sticky;top:6px;z-index:20;display:flex;gap:8px;flex-wrap:wrap;
+  padding:10px;margin-bottom:10px;border-radius:16px;background:rgba(17,24,39,.92);
+  border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(8px)
+}
+.top-stats .chip{padding:7px 9px;border-radius:999px;background:rgba(255,255,255,.08);font-size:12px;color:var(--muted)}
+.main-tabs,.tabs{display:flex;gap:8px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:6px}
+@media (max-width: 900px){
+  #playerTabs.tabs{
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:6px;
+    overflow:visible !important;
+    padding-bottom:0;
+    width:100%;
+  }
+  #playerTabs.tabs button{
+    width:100%;
+    min-width:0;
+    text-align:center;
+    justify-content:center;
+  }
+}
+.main-tabs{margin:0 0 10px 0}
+.main-tabs button,.tabs button{font-size:11px;line-height:1.1;
+  min-height:auto;padding:9px 11px;border-radius:999px;white-space:nowrap;flex:0 0 auto;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12)
+}
+.main-tabs button.active,.tabs button.active{background:linear-gradient(180deg,var(--accent),var(--accent2))}
+.main-section{display:none}
+.main-section.active{display:block}
+.layout{display:grid;grid-template-columns:1.45fr 1fr;gap:14px}
+.stack{display:grid;gap:14px}
+.card-title{font-size:18px;margin-bottom:10px}
+.field{display:grid;gap:8px}
+label{font-size:13px;color:var(--muted);font-weight:700}
+input,select{
+  width:100%;background:rgba(255,255,255,.08);color:var(--text);border:1px solid rgba(255,255,255,.14);
+  border-radius:14px;padding:12px;font-size:16px;outline:none
+}
+select option{color:#111827}
+.form-grid{display:grid;grid-template-columns:1fr 130px 130px 110px;gap:10px;align-items:end}
+.preset-list,.quick-actions,.stats-grid,.issues,.summary-grid,.bit-grid{display:flex;flex-wrap:wrap;gap:8px}
+.preset-list{display:grid;gap:8px}
+.preset-row{
+  display:grid;grid-template-columns:minmax(0,1fr) 130px 86px;gap:8px;align-items:center;
+  background:var(--card2);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:8px 10px
+}
+.preset-row input[type=checkbox]{width:22px;height:22px;accent-color:var(--accent)}
+.preset-row .mini-danger{background:rgba(251,113,133,.12);border:1px solid rgba(251,113,133,.24);color:#fecdd3;border-radius:10px;padding:8px 10px;min-height:auto;cursor:pointer;width:100%;position:relative;z-index:2}
+html[dir="ltr"] body{direction:ltr}
+html[dir="ltr"] .hero-top, html[dir="ltr"] .player-head, html[dir="ltr"] .form-grid{direction:ltr}
+html[dir="ltr"] .main-tabs, html[dir="ltr"] .tabs, html[dir="ltr"] .quick-actions, html[dir="ltr"] .chips, html[dir="ltr"] .top-stats{direction:ltr}
+.player-card,.summary-card,.stat-box,.issue,.bit-box{
+  background:var(--card2);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:14px
+}
+.player-head{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:10px;align-items:center}
+.player-name{font-size:22px;font-weight:800}
+.meta-label{font-size:12px;color:var(--soft);margin-bottom:6px}
+.amount{font-size:22px;font-weight:800}
+.good{color:var(--good)} .bad{color:var(--bad)}
+.player-body{display:grid;gap:12px;margin-top:14px}
+.quick-actions button,.quick-actions select{min-height:auto;padding:10px 12px;border-radius:12px;width:auto}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.08);
+  border-radius:999px;padding:7px 10px;font-size:12px;color:#e2e8f0
+}
+.summary-card{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:10px;align-items:center}
+.bit-box{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
+.empty{padding:16px;border-radius:16px;border:1px dashed rgba(255,255,255,.16);color:var(--soft);background:rgba(255,255,255,.04)}
+
+.toast{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%) translateY(24px);
+  background:rgba(15,23,42,.94);
+  color:#fff;
+  padding:10px 14px;
+  border-radius:14px;
+  font-size:13px;
+  border:1px solid rgba(255,255,255,.12);
+  opacity:0;
+  pointer-events:none;
+  transition:all .28s ease;
+  z-index:9999;
+  box-shadow:0 12px 30px rgba(0,0,0,.28);
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.toast.show{
+  opacity:1;
+  transform:translateX(-50%) translateY(0);
+}
+.toast.success{background:rgba(22,163,74,.92)}
+.toast.danger{background:rgba(190,24,93,.92)}
+.toast.info{background:rgba(15,23,42,.94)}
+
+@media (max-width:980px){
+  .layout,.form-grid,.player-head,.summary-card,.bit-box{grid-template-columns:1fr}
+  .preset-row{grid-template-columns:1fr 1fr 72px}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <section class="card hero">
+    <div class="hero-top">
+      <div>
+        <div class="eyebrow">🎴 ChipSplit</div>
+        <h1>Chip<span style="color:#22c55e">Split</span></h1><p style="margin-top:6px;font-size:12px;color:#94a3b8">סוגרים פוקר בלי בלגן של ביט ומזומן</p><div style="margin-top:6px;font-size:11px;color:#94a3b8">v1.0</div>
+      </div>
+      <div class="hero-actions">
+        <button id="finishGameBtn" class="warning">סיים משחק</button>
+        <button id="resetAllBtn" class="secondary">איפוס</button>
+        <button id="saveNowBtn" class="secondary">שמור</button>
+        <button id="langToggleBtn" class="secondary">EN</button>
+      </div>
+    </div>
+  </section>
+
+  <div id="topStats" class="top-stats"></div>
+<div class="card" style="margin-bottom:10px"><div class="card-inner" style="padding:12px"><div class="field"><label id="currencyLabel">מטבע</label><select id="currencySelect"><option value="ILS">₪ ILS</option><option value="USD">$ USD</option><option value="EUR">€ EUR</option><option value="GBP">£ GBP</option></select></div></div></div>
+
+  <div class="main-tabs">
+    <button id="mainTabGame" class="active" onclick="switchMainTab('game')">🎮 משחק</button>
+    <button id="mainTabPresets" onclick="switchMainTab('presets')">👥 שחקנים</button>
+    <button id="mainTabSummary" onclick="switchMainTab('summary')">📊 סיכום</button>
+    <button id="mainTabBit" onclick="switchMainTab('bit')">💸 העברות</button>
+  </div>
+
+  <div id="mainSectionGame" class="main-section active">
+    <div class="layout">
+      <div class="stack">
+        <section class="card">
+          <div class="card-inner">
+            <div class="card-title">🎮 משחק</div><div class="meta-label" style="margin-bottom:8px"></div>
+            <div class="field">
+              <label for="gameName">שם המשחק</label>
+              <input id="gameName" placeholder="שם המשחק">
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-inner">
+            <div class="card-title">👥 שחקנים</div>
+            <div id="playerTabs" class="tabs"></div>
+            <input id="playerSearch" placeholder="חיפוש שחקן..." style="margin:10px 0">
+            <div id="playerView"></div>
+          </div>
+        </section>
+      </div>
+
+      <div class="stack">
+        <section class="card">
+          <div class="card-inner">
+            <div class="card-title">💰 פילוח קופה</div>
+            <div id="potBreakdown" class="stats-grid"></div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-inner">
+            <div class="card-title">✅ בדיקות</div>
+            <div id="issuesList" class="issues"></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div id="mainSectionPresets" class="main-section">
+    <section class="card">
+      <div class="card-inner">
+        <div class="card-title">👥 שחקנים</div>
+        <div class="field" style="margin-bottom:12px">
+          <label id="savedPlayersLabel">בחר שחקנים שמורים להוספה למשחק</label>
+          <div id="presetPlayers" class="preset-list"></div>
+        </div>
+        <button id="addSelectedPlayersBtn">הוסף נבחרים למשחק</button>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:14px">
+      <div class="card-inner">
+        <div class="card-title" id="manageSavedPlayersTitle">ניהול שחקנים שמורים</div>
+        <div class="form-grid">
+          <div class="field">
+            <label for="newPresetName" id="newPresetNameLabel">שחקן שמור חדש</label>
+            <input id="newPresetName" placeholder="שם שחקן">
+          </div>
+          <div class="field">
+            <label for="newPresetMethod" id="newPresetMethodLabel">אמצעי ברירת מחדל</label>
+            <select id="newPresetMethod">
+              <option value="cash" selected>מזומן</option>
+              <option value="bit">ביט</option>
+            </select>
+          </div>
+          <button id="addPresetBtn">הוסף לרשימה</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:14px">
+      <div class="card-inner">
+        <div class="card-title" id="guestPlayerTitle">שחקן אורח</div>
+        <div class="form-grid">
+          <div class="field">
+            <label for="newPlayerName">שחקן חדש</label>
+            <input id="newPlayerName" placeholder="שם שחקן">
+          </div>
+          <div class="field">
+            <label for="defaultBuyIn">כניסה התחלתית</label>
+            <input id="defaultBuyIn" type="number" value="50">
+          </div>
+          <div class="field">
+            <label for="defaultBuyInMethod">אמצעי</label>
+            <select id="defaultBuyInMethod">
+              <option value="cash" selected>מזומן</option>
+              <option value="bit">ביט</option>
+            </select>
+          </div>
+          <button id="addPlayerBtn">הוסף</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="mainSectionSummary" class="main-section">
+    <section class="card">
+      <div class="card-inner">
+        <div class="card-title">📊 סיכום לפי שחקן</div>
+        <div id="summaryList" class="summary-grid" style="display:grid"></div>
+      </div>
+    </section>
+  </div>
+
+  <div id="mainSectionBit" class="main-section">
+    <section class="card" style="margin-bottom:14px">
+      <div class="card-inner">
+        <div class="card-title">💸 סיכום העברות ביט</div>
+        <div id="bitTransfers" class="bit-grid" style="display:grid"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-inner">
+        <div class="card-title">📲 כמה כל שחקן עוד צריך לקבל בביט</div>
+        <div id="bitOutstanding" class="bit-grid" style="display:grid"></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = "poker-tabs-main-v2";
+const PRESET_PLAYERS = [];
+
+const els = {
+  topStats: document.getElementById("topStats"),
+  currencySelect: document.getElementById("currencySelect"),
+  gameName: document.getElementById("gameName"),
+  newPlayerName: document.getElementById("newPlayerName"),
+  defaultBuyIn: document.getElementById("defaultBuyIn"),
+  defaultBuyInMethod: document.getElementById("defaultBuyInMethod"),
+  addPlayerBtn: document.getElementById("addPlayerBtn"),
+  addSelectedPlayersBtn: document.getElementById("addSelectedPlayersBtn"),
+  saveNowBtn: document.getElementById("saveNowBtn"),
+  resetAllBtn: document.getElementById("resetAllBtn"),
+  finishGameBtn: document.getElementById("finishGameBtn"),
+  langToggleBtn: document.getElementById("langToggleBtn"),
+  currencyLabel: document.getElementById("currencyLabel"),
+  toast: document.getElementById("toast"),
+  presetPlayers: document.getElementById("presetPlayers"),
+  newPresetName: document.getElementById("newPresetName"),
+  newPresetMethod: document.getElementById("newPresetMethod"),
+  addPresetBtn: document.getElementById("addPresetBtn"),
+  playerTabs: document.getElementById("playerTabs"),
+  playerSearch: document.getElementById("playerSearch"),
+  playerView: document.getElementById("playerView"),
+  potBreakdown: document.getElementById("potBreakdown"),
+  issuesList: document.getElementById("issuesList"),
+  summaryList: document.getElementById("summaryList"),
+  bitTransfers: document.getElementById("bitTransfers"),
+  bitOutstanding: document.getElementById("bitOutstanding"),
+  mainTabGame: document.getElementById("mainTabGame"),
+  mainTabPresets: document.getElementById("mainTabPresets"),
+  mainTabSummary: document.getElementById("mainTabSummary"),
+  mainTabBit: document.getElementById("mainTabBit"),
+  mainSectionGame: document.getElementById("mainSectionGame"),
+  mainSectionPresets: document.getElementById("mainSectionPresets"),
+  mainSectionSummary: document.getElementById("mainSectionSummary"),
+  mainSectionBit: document.getElementById("mainSectionBit")
+};
+
+const defaultState = {
+  gameName: "פוקר עם חברים",
+  defaultBuyIn: 50,
+  defaultBuyInMethod: "cash",
+  gameFinished: false,
+  activePlayerId: null,
+  mainTab: "game",
+  language: "he",
+  currency: "ILS",
+  customPresets: [],
+  players: []
+};
+
+let state = loadState();
+
+function clone(x){ return JSON.parse(JSON.stringify(x)); }
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return clone(defaultState);
+    const parsed = JSON.parse(raw);
+    if(!parsed || !Array.isArray(parsed.players)) return clone(defaultState);
+    return {
+      gameName: parsed.gameName || defaultState.gameName,
+      defaultBuyIn: Number(parsed.defaultBuyIn) || 50,
+      defaultBuyInMethod: parsed.defaultBuyInMethod || "cash",
+      gameFinished: !!parsed.gameFinished,
+      activePlayerId: parsed.activePlayerId || null,
+      mainTab: parsed.mainTab || "game",
+      language: parsed.language || "he",
+      currency: parsed.currency || "ILS",
+      customPresets: Array.isArray(parsed.customPresets) ? parsed.customPresets.map((p)=>({name:p.name||"", method:p.method==="bit"?"bit":"cash"})).filter((p)=>p.name) : [],
+      players: parsed.players.map((p) => ({
+        id: p.id || crypto.randomUUID(),
+        name: p.name || "שחקן",
+        buyIns: Array.isArray(p.buyIns) ? p.buyIns.map((b) => ({ amount: Number(b.amount) || 0, method: b.method === "bit" ? "bit" : "cash" })) : [],
+        cashOut: p.cashOut === "" ? "" : Number(p.cashOut) || 0,
+        finalCash: Number(p.finalCash) || 0
+      }))
+    };
+  } catch {
+    return clone(defaultState);
+  }
+}
+
+function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+function formatCurrency(v){
+  const currency = state.currency || "ILS";
+  const locale = state.language === "he" ? "he-IL" : "en";
+  return new Intl.NumberFormat(locale, { style:"currency", currency, maximumFractionDigits:0 }).format(Number.isFinite(v) ? v : 0);
+}
+function escapeHtml(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"); }
+function totalBuyIn(p){ return p.buyIns.reduce((s,b)=>s+b.amount,0); }
+function totalByMethod(p,m){ return p.buyIns.filter((b)=>b.method===m).reduce((s,b)=>s+b.amount,0); }
+function netResult(p){ return p.cashOut === "" ? null : (Number(p.cashOut)||0) - totalBuyIn(p); }
+function remainingBit(p){
+  if(p.cashOut === "") return null;
+  const net = Number(netResult(p)) || 0;
+  if(net <= 0) return 0;
+  return Math.max((Number(p.cashOut)||0) - (Number(p.finalCash)||0), 0);
+}
+function appReceivers(players){
+  return players
+    .filter((p)=>p.cashOut !== "")
+    .map((p)=>{
+      const net = Number(netResult(p)) || 0;
+      const amount = remainingBit(p) || 0;
+      return { id: p.id, name: p.name, finalCash: Number(p.finalCash)||0, net, amount };
+    })
+    .filter((p)=>p.net > 0.009 && p.amount > 0.009);
+}
+function playerExists(name){ return state.players.some((p)=>p.name===name); }
+
+const I18N = {
+  he: {
+    lang_btn: "EN",
+    finish: "סיים משחק",
+    reset: "איפוס",
+    save: "שמור",
+    saved: "נשמר",
+    game_tab: "🎮 משחק",
+    players_tab: "👥 שחקנים",
+    summary_tab: "📊 סיכום",
+    bit_tab: "💸 העברות",
+    game_title: "🎮 משחק",
+    players_title: "👥 שחקנים",
+    summary_title: "📊 סיכום לפי שחקן",
+    bit_title: "💸 סיכום העברות באפליקציה",
+    bit_out_title: "📲 כמה כל שחקן עוד צריך לקבל דרך אפליקציה",
+    pot_title: "💰 פילוח קופה",
+    checks_title: "✅ בדיקות",
+    game_name: "שם המשחק",
+    new_player: "שחקן אורח",
+    initial_buyin: "כניסה התחלתית",
+    method: "אמצעי",
+    add: "הוסף",
+    add_selected: "הוסף נבחרים למשחק",
+    search_player: "חיפוש שחקן...",
+    saved_players_label: "בחר שחקנים שמורים להוספה למשחק",
+    manage_saved_players: "ניהול שחקנים שמורים",
+    new_saved_player: "שחקן שמור חדש",
+    default_method: "אמצעי ברירת מחדל",
+    add_to_list: "הוסף לרשימה",
+    guest_player: "שחקן אורח",
+    currency: "מטבע",
+    cash: "מזומן",
+    app: "אפליקציה",
+    players: "שחקנים",
+    pot: "קופה",
+    final: "סופי",
+    open: "פתוח",
+    finished: "הסתיים",
+    cash_in_pot: "מזומן בקופה",
+    app_in_pot: "אפליקציה בקופה",
+    total_pot: "סה״כ קופה",
+    no_match: "אין שחקן תואם",
+    buyins: "כניסות",
+    invested: "השקיע",
+    profit_loss: "רווח / הפסד",
+    buyin: "כניסה",
+    no_buyins: "ללא כניסות",
+    custom: "אחר",
+    delete: "מחק",
+    app_left: "נשאר לקבל דרך אפליקציה",
+    final_amount: "סכום סופי",
+    final_cash: "מזומן שקיבל בסוף",
+    no_issues: "אין בעיות מזוהות",
+    no_players: "אין עדיין שחקנים",
+    no_app_transfers: "אין עדיין העברות באפליקציה",
+    no_app_outstanding: "אין יתרות אפליקציה כרגע",
+    transfer_to: "צריך להעביר באפליקציה ל-",
+    cash_received: "מזומן שקיבל:",
+    cash_received_app_left: "מזומן שקיבל / נשאר לקבל דרך אפליקציה",
+    enter_amount: "הכנס סכום:",
+    cannot_finish: "אי אפשר לסיים משחק לפני תיקון הנתונים.",
+    confirm_reset: "לאפס את כל המשחק?",
+    saved_player_exists: "שחקן כבר קיים ברשימה",
+    no_saved_players: "אין עדיין שחקנים שמורים",
+    confirm_remove_saved: "למחוק את השחקן השמור הזה?",
+    toast_saved_player: "שחקן נשמר",
+    toast_removed_player: "שחקן נמחק",
+    toast_player_added: "שחקן נוסף למשחק",
+    toast_game_saved: "נשמר",
+    subtitle: "סוגרים משחק פוקר בלי בלגן של מזומן ואפליקציה",
+    game_helper: "הוספת שחקנים קבועים ואורחים נמצאת בלשונית שחקנים"
+  },
+  en: {
+    lang_btn: "עב",
+    finish: "Finish game",
+    reset: "Reset",
+    save: "Save",
+    saved: "Saved",
+    game_tab: "🎮 Game",
+    players_tab: "👥 Players",
+    summary_tab: "📊 Summary",
+    bit_tab: "💸 Transfers",
+    game_title: "🎮 Game",
+    players_title: "👥 Players",
+    summary_title: "📊 Player summary",
+    bit_title: "💸 App transfer summary",
+    bit_out_title: "📲 App amount left to receive per player",
+    pot_title: "💰 Pot breakdown",
+    checks_title: "✅ Checks",
+    game_name: "Game name",
+    new_player: "Guest player",
+    initial_buyin: "Initial buy-in",
+    method: "Method",
+    add: "Add",
+    add_selected: "Add selected players",
+    search_player: "Search player...",
+    saved_players_label: "Choose saved players to add to this game",
+    manage_saved_players: "Manage saved players",
+    new_saved_player: "New saved player",
+    default_method: "Default payment method",
+    add_to_list: "Add to list",
+    guest_player: "Guest player",
+    currency: "Currency",
+    cash: "Cash",
+    app: "App",
+    players: "players",
+    pot: "Pot",
+    final: "Final",
+    open: "Open",
+    finished: "Finished",
+    cash_in_pot: "Cash in pot",
+    app_in_pot: "App in pot",
+    total_pot: "Total pot",
+    no_match: "No matching player",
+    buyins: "buy-ins",
+    invested: "Invested",
+    profit_loss: "Profit / loss",
+    buyin: "Buy-in",
+    no_buyins: "No buy-ins",
+    custom: "Custom",
+    delete: "Delete",
+    app_left: "App left to receive",
+    final_amount: "Final stack amount",
+    final_cash: "Cash received at cash-out",
+    no_issues: "No issues detected",
+    no_players: "No players yet",
+    no_app_transfers: "No app transfers yet",
+    no_app_outstanding: "No outstanding app balances",
+    transfer_to: "needs to send via app to ",
+    cash_received: "Cash received:",
+    cash_received_app_left: "Cash received / App left",
+    enter_amount: "Enter amount:",
+    cannot_finish: "You cannot finish the game before fixing the data.",
+    confirm_reset: "Reset the entire game?",
+    saved_player_exists: "That player already exists in the saved list",
+    no_saved_players: "No saved players yet",
+    confirm_remove_saved: "Delete this saved player?",
+    toast_saved_player: "Saved player added",
+    toast_removed_player: "Saved player removed",
+    toast_player_added: "Player added to game",
+    toast_game_saved: "Saved",
+    subtitle: "Close poker games without cash and app confusion",
+    game_helper: "Add saved players and guest players from the Players tab"
+  }
+};
+
+function t(k){ return (I18N[state.language] && I18N[state.language][k]) || k; }
+
+
+function applyLanguageShell(){
+  document.documentElement.lang = state.language === "he" ? "he" : "en";
+  document.documentElement.dir = state.language === "he" ? "rtl" : "ltr";
+
+  const subtitle = document.querySelector("h1 + p");
+  if (subtitle) subtitle.textContent = t("subtitle");
+
+  if (els.langToggleBtn) els.langToggleBtn.textContent = t("lang_btn");
+  if (els.finishGameBtn) els.finishGameBtn.textContent = t("finish");
+  if (els.resetAllBtn) els.resetAllBtn.textContent = t("reset");
+  if (els.saveNowBtn && els.saveNowBtn.textContent !== I18N.he.saved && els.saveNowBtn.textContent !== I18N.en.saved) {
+    els.saveNowBtn.textContent = t("save");
+  }
+
+  els.mainTabGame.textContent = t("game_tab");
+  els.mainTabPresets.textContent = t("players_tab");
+  els.mainTabSummary.textContent = t("summary_tab");
+  els.mainTabBit.textContent = t("bit_tab");
+
+  if (els.currencyLabel) els.currencyLabel.textContent = t("currency");
+  if (els.currencySelect) els.currencySelect.setAttribute("aria-label", t("currency"));
+
+  const gameTitles = document.querySelectorAll('#mainSectionGame .card-title');
+  if (gameTitles[0]) gameTitles[0].textContent = t("game_title");
+  if (gameTitles[1]) gameTitles[1].textContent = t("players_title");
+
+  const sideTitles = document.querySelectorAll('#mainSectionGame .stack:last-child .card-title');
+  if (sideTitles[0]) sideTitles[0].textContent = t("pot_title");
+  if (sideTitles[1]) sideTitles[1].textContent = t("checks_title");
+
+  const presetCards = document.querySelectorAll('#mainSectionPresets .card-title');
+  if (presetCards[0]) presetCards[0].textContent = t("players_title");
+  if (presetCards[1]) presetCards[1].textContent = t("manage_saved_players");
+  if (presetCards[2]) presetCards[2].textContent = t("guest_player");
+
+  const summaryTitle = document.querySelector('#mainSectionSummary .card-title');
+  if (summaryTitle) summaryTitle.textContent = t("summary_title");
+
+  const bitTitles = document.querySelectorAll('#mainSectionBit .card-title');
+  if (bitTitles[0]) bitTitles[0].textContent = t("bit_title");
+  if (bitTitles[1]) bitTitles[1].textContent = t("bit_out_title");
+
+  const savedLabel = document.getElementById("savedPlayersLabel");
+  if (savedLabel) savedLabel.textContent = t("saved_players_label");
+  const gameHelperText = document.getElementById("gameHelperText");
+  if (gameHelperText) {
+    gameHelperText.textContent = t("game_helper");
+    gameHelperText.style.display = "block";
+  }
+
+  const newPresetNameLabel = document.getElementById("newPresetNameLabel");
+  if (newPresetNameLabel) newPresetNameLabel.textContent = t("new_saved_player");
+
+  const newPresetMethodLabel = document.getElementById("newPresetMethodLabel");
+  if (newPresetMethodLabel) newPresetMethodLabel.textContent = t("default_method");
+
+  const addPresetBtn = document.getElementById("addPresetBtn");
+  if (addPresetBtn) addPresetBtn.textContent = t("add_to_list");
+
+  if (els.addSelectedPlayersBtn) els.addSelectedPlayersBtn.textContent = t("add_selected");
+
+  const labels = Array.from(document.querySelectorAll("label"));
+  labels.forEach((label) => {
+    const target = label.getAttribute("for") || "";
+    if (target === "gameName") label.textContent = t("game_name");
+    if (target === "newPlayerName") label.textContent = t("new_player");
+    if (target === "defaultBuyIn") label.textContent = t("initial_buyin");
+    if (target === "defaultBuyInMethod") label.textContent = t("method");
+    if (target === "newPresetName") label.textContent = t("new_saved_player");
+    if (target === "newPresetMethod") label.textContent = t("default_method");
+  });
+
+  if (els.gameName) els.gameName.placeholder = t("game_name");
+  if (els.newPlayerName) els.newPlayerName.placeholder = t("new_player");
+  if (els.playerSearch) els.playerSearch.placeholder = t("search_player");
+  if (els.newPresetName) els.newPresetName.placeholder = t("new_saved_player");
+
+  const addPlayerBtn = document.getElementById("addPlayerBtn");
+  if (addPlayerBtn) addPlayerBtn.textContent = t("add");
+
+  document.querySelectorAll('#defaultBuyInMethod option[value="cash"], #newPresetMethod option[value="cash"]').forEach(el => el.textContent = t("cash"));
+  document.querySelectorAll('#defaultBuyInMethod option[value="bit"], #newPresetMethod option[value="bit"]').forEach(el => el.textContent = t("app"));
+}
+
+function validateGame(players){
+  const totalIn = players.reduce((s,p)=>s+totalBuyIn(p),0);
+  const totalOut = players.reduce((s,p)=>s+(p.cashOut===""?0:Number(p.cashOut)||0),0);
+  const issues = [];
+  if(players.length && players.some((p)=>p.cashOut==="")) issues.push("יש שחקנים בלי סכום סופי.");
+  if(players.length && Math.abs(totalIn-totalOut) > 0.5) issues.push(`סה״כ הכניסות (${formatCurrency(totalIn)}) לא שווה לסה״כ הסכומים הסופיים (${formatCurrency(totalOut)}).`);
+  if(players.some((p)=>p.cashOut !== "" && (Number(p.finalCash)||0) > (Number(p.cashOut)||0)+0.01)) issues.push("יש שחקנים שסכום המזומן שקיבלו גבוה מהסכום הסופי שלהם.");
+  return issues;
+}
+
+function bitTransfersByPlayers(players){
+  const payers = players
+    .filter((p)=>p.cashOut !== "")
+    .map((p)=>{
+      const net = Number(netResult(p)) || 0;
+      return {
+        id: p.id,
+        name: p.name,
+        amount: net < -0.009 ? Math.abs(net) : 0
+      };
+    })
+    .filter((p)=>p.amount > 0.009)
+    .sort((a,b)=>b.amount-a.amount);
+
+  const receivers = appReceivers(players)
+    .map((p)=>({ id: p.id, name: p.name, amount: p.amount }))
+    .sort((a,b)=>b.amount-a.amount);
+
+  const out = [];
+  let i = 0, j = 0;
+
+  while(i < payers.length && j < receivers.length){
+    const payer = payers[i];
+    const receiver = receivers[j];
+
+    if(payer.id === receiver.id){
+      i++;
+      continue;
+    }
+
+    const amount = Math.min(payer.amount, receiver.amount);
+    if(amount > 0.009){
+      out.push({
+        from: payer.name,
+        to: receiver.name,
+        amount: Math.round(amount * 100) / 100
+      });
+    }
+
+    payer.amount = Math.round((payer.amount - amount) * 100) / 100;
+    receiver.amount = Math.round((receiver.amount - amount) * 100) / 100;
+
+    if(payer.amount < 0.01) i++;
+    if(receiver.amount < 0.01) j++;
+  }
+
+  return out;
+}
+
+function buildPresetPlayers(){
+  const presets = (state.customPresets && state.customPresets.length) ? state.customPresets : PRESET_PLAYERS.map((name)=>({name, method:"cash"}));
+  els.presetPlayers.innerHTML = presets.length ? presets.map((item, idx)=>`
+    <div class="preset-row">
+      <div>${escapeHtml(item.name)}</div>
+      <select id="preset-method-${idx}">
+        <option value="cash" ${item.method==="cash" ? "selected" : ""}>${t("cash")}</option>
+        <option value="bit" ${item.method==="bit" ? "selected" : ""}>${t("app")}</option>
+      </select>
+      <div style="display:flex;gap:6px;align-items:center">
+        <input type="checkbox" value="${escapeHtml(item.name)}">
+        <button type="button" class="mini-danger" onclick="removePresetByIndex(${idx})">${state.language === "he" ? "הסר" : "Remove"}</button>
+      </div>
+    </div>
+  `).join("") : `<div class="empty">${t("no_saved_players")}</div>`;
+}
+
+function addPlayerWithName(name, methodOverride=null){
+  const buyIn = Number(els.defaultBuyIn.value)||0;
+  const method = methodOverride ? methodOverride : (els.defaultBuyInMethod.value==="bit"?"bit":"cash");
+  if(!name || playerExists(name)) return;
+  const id = crypto.randomUUID();
+  state.players.push({ id, name, buyIns: buyIn>0 ? [{amount:buyIn,method}] : [], cashOut:"", finalCash:0 });
+  state.activePlayerId = id;
+}
+
+function switchMainTab(tab){
+  state.mainTab = tab;
+  els.mainTabGame.classList.toggle("active", tab==="game");
+  els.mainTabPresets.classList.toggle("active", tab==="presets");
+  els.mainTabSummary.classList.toggle("active", tab==="summary");
+  els.mainTabBit.classList.toggle("active", tab==="bit");
+  els.mainSectionGame.classList.toggle("active", tab==="game");
+  els.mainSectionPresets.classList.toggle("active", tab==="presets");
+  els.mainSectionSummary.classList.toggle("active", tab==="summary");
+  els.mainSectionBit.classList.toggle("active", tab==="bit");
+  saveState();
+}
+
+function renderTabs(filtered){
+  if(filtered.length && !filtered.some((p)=>p.id===state.activePlayerId)) state.activePlayerId = filtered[0].id;
+  els.playerTabs.innerHTML = filtered.map((p)=>`<button class="${state.activePlayerId===p.id?'active':''}" onclick="openPlayer('${p.id}')">${escapeHtml(p.name)}</button>`).join("");
+}
+
+function renderTopStats(){
+  const potCash = state.players.reduce((s,p)=>s+totalByMethod(p,"cash"),0);
+  const potApp = state.players.reduce((s,p)=>s+totalByMethod(p,"bit"),0);
+  const totalIn = state.players.reduce((s,p)=>s+totalBuyIn(p),0);
+  const totalOut = state.players.reduce((s,p)=>s+(p.cashOut===""?0:Number(p.cashOut)||0),0);
+
+  els.topStats.innerHTML = `
+    <div class="chip">👥 ${state.players.length} ${t("players")}</div>
+    <div class="chip">💰 ${t("pot")} ${formatCurrency(totalIn)}</div>
+    <div class="chip">💵 ${t("cash")} ${formatCurrency(potCash)}</div>
+    <div class="chip">📲 ${t("app")} ${formatCurrency(potApp)}</div>
+    <div class="chip">🏁 ${t("final")} ${formatCurrency(totalOut)}</div>
+    <div class="chip">${state.gameFinished ? "🔒 " + t("finished") : "🟢 " + t("open")}</div>
+  `;
+
+  els.potBreakdown.innerHTML = `
+    <div class="stat-box"><div class="meta-label">${t("cash_in_pot")}</div><div class="amount">${formatCurrency(potCash)}</div></div>
+    <div class="stat-box"><div class="meta-label">${t("app_in_pot")}</div><div class="amount">${formatCurrency(potApp)}</div></div>
+    <div class="stat-box"><div class="meta-label">${t("total_pot")}</div><div class="amount">${formatCurrency(potCash+potApp)}</div></div>
+  `;
+}
+
+function renderPlayerView(filtered){
+  const player = filtered.find((p)=>p.id===state.activePlayerId);
+  if(!player){ els.playerView.innerHTML = `<div class="empty">${t("no_match")}</div>`; return; }
+  const invested = totalBuyIn(player);
+  const cashOut = player.cashOut === "" ? "" : Number(player.cashOut)||0;
+  const net = netResult(player);
+  const finalCash = Number(player.finalCash)||0;
+  const appLeft = remainingBit(player);
+
+  els.playerView.innerHTML = `
+    <div class="player-card">
+      <div class="player-head">
+        <div>
+          <div class="player-name">${escapeHtml(player.name)}</div>
+          <div class="meta-label">${player.buyIns.length} ${t("buyins")}</div>
+        </div>
+        <div>
+          <div class="meta-label">${t("invested")}</div>
+          <div class="amount">${formatCurrency(invested)}</div>
+        </div>
+        <div>
+          <div class="meta-label">${t("profit_loss")}</div>
+          <div class="amount ${(net===null||net>=0)?'good':'bad'}">${net===null?'-':`${net>=0?'+':'-'}${formatCurrency(Math.abs(net))}`}</div>
+        </div>
+      </div>
+
+      <div class="player-body">
+        <div class="chips">
+          ${player.buyIns.length
+            ? player.buyIns.map((b,i)=>`<span class="chip">${t("buyin")} ${i+1}: ${formatCurrency(b.amount)} • ${b.method==="bit"?t("app"):t("cash")}</span>`).join("")
+            : `<span class="chip">${t("no_buyins")}</span>`}
+        </div>
+
+        <div class="quick-actions">
+          <select id="method-${player.id}" ${state.gameFinished?"disabled":""}>
+            <option value="cash">${t("cash")}</option>
+            <option value="bit">${t("app")}</option>
+          </select>
+          <button class="secondary" onclick="addBuyIn('${player.id}',50)" ${state.gameFinished?"disabled":""}>50</button>
+          <button class="secondary" onclick="addBuyIn('${player.id}',100)" ${state.gameFinished?"disabled":""}>100</button>
+          <button class="secondary" onclick="addBuyIn('${player.id}',200)" ${state.gameFinished?"disabled":""}>200</button>
+          <button class="secondary" onclick="addCustomBuyIn('${player.id}')" ${state.gameFinished?"disabled":""}>${t("custom")}</button>
+          <button class="danger" onclick="removePlayer('${player.id}')" ${state.gameFinished?"disabled":""}>${t("delete")}</button>
+        </div>
+
+        <div class="chips">
+          <span class="chip">${t("app")}: ${formatCurrency(totalByMethod(player,"bit"))}</span>
+          <span class="chip">${t("cash")}: ${formatCurrency(totalByMethod(player,"cash"))}</span>
+          ${player.cashOut==="" ? "" : `<span class="chip">${t("app_left")}: ${formatCurrency(appLeft)}</span>`}
+        </div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label>${t("final_amount")}</label>
+            <input type="number" value="${cashOut===""?"":cashOut}" placeholder="0" ${state.gameFinished?"disabled":""}
+              onchange="updateCashOut('${player.id}', this.value)" onblur="updateCashOut('${player.id}', this.value)">
+          </div>
+          <div class="field">
+            <label>${t("final_cash")}</label>
+            <input type="number" value="${finalCash}" placeholder="0" ${state.gameFinished?"disabled":""}
+              onchange="updateFinalCash('${player.id}', this.value)" onblur="updateFinalCash('${player.id}', this.value)">
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderIssues(){
+  const issues = validateGame(state.players).map((x) => {
+    if (state.language !== "en") return x;
+    return x
+      .replace("יש שחקנים בלי סכום סופי.", "Some players are missing a final stack amount.")
+      .replace("יש שחקנים שסכום המזומן שקיבלו גבוה מהסכום הסופי שלהם.", "Some players have cash received that is higher than their final stack amount.")
+      .replace("סה״כ הכניסות", "Total buy-ins")
+      .replace("לא שווה לסה״כ הסכומים הסופיים", "does not match total final stack amounts");
+  });
+  els.issuesList.innerHTML = issues.length ? issues.map((x)=>`<div class="issue">${x}</div>`).join("") : `<div class="empty">${t("no_issues")}</div>`;
+}
+
+function renderSummary(){
+  els.summaryList.innerHTML = state.players.length
+    ? state.players.map((p)=>{
+      const invested = totalBuyIn(p), cashOut = p.cashOut===""?0:Number(p.cashOut)||0, net = netResult(p), cash = Number(p.finalCash)||0, appLeft = remainingBit(p);
+      return `
+        <div class="summary-card">
+          <div><div style="font-weight:800">${escapeHtml(p.name)}</div></div>
+          <div><div class="meta-label">${t("invested")}</div><div>${formatCurrency(invested)}</div><div class="meta-label">${t("app")} ${formatCurrency(totalByMethod(p,"bit"))} • ${t("cash")} ${formatCurrency(totalByMethod(p,"cash"))}</div></div>
+          <div><div class="meta-label">${t("final_amount")}</div><div>${p.cashOut===""?"-":formatCurrency(cashOut)}</div></div>
+          <div><div class="meta-label">${t("profit_loss")}</div><div class="${net===null||net>=0?'good':'bad'}" style="font-weight:800">${net===null?'-':`${net>=0?'+':'-'}${formatCurrency(Math.abs(net))}`}</div></div>
+          <div><div class="meta-label">${t("cash_received_app_left")}</div><div>${p.cashOut===""?"-":`${formatCurrency(cash)} / ${formatCurrency(appLeft)}`}</div></div>
+        </div>
+      `;
+    }).join("")
+    : `<div class="empty">${t("no_players")}</div>`;
+}
+
+function renderBit(){
+  const transfers = bitTransfersByPlayers(state.players);
+  els.bitTransfers.innerHTML = transfers.length
+    ? transfers.map((tr)=>`
+      <div class="bit-box">
+        <div><div style="font-weight:800">${escapeHtml(tr.from)}</div><div class="meta-label">${t("transfer_to")}${escapeHtml(tr.to)}</div></div>
+        <div class="amount">${formatCurrency(tr.amount)}</div>
+      </div>
+    `).join("")
+    : `<div class="empty">${t("no_app_transfers")}</div>`;
+
+  const receivers = appReceivers(state.players);
+  els.bitOutstanding.innerHTML = receivers.length
+    ? receivers.map((p)=>`
+      <div class="bit-box">
+        <div><div style="font-weight:800">${escapeHtml(p.name)}</div><div class="meta-label">${t("cash_received")} ${formatCurrency(Number(p.finalCash)||0)}</div></div>
+        <div class="amount">${formatCurrency(p.amount)}</div>
+      </div>
+    `).join("")
+    : `<div class="empty">${t("no_app_outstanding")}</div>`;
+}
+
+function render(){
+  applyLanguageShell();
+  const gh = document.getElementById("gameHelperText"); if (gh) gh.textContent = t("game_helper");
+  els.gameName.value = state.gameName;
+  if (els.currencySelect) els.currencySelect.value = state.currency || "ILS";
+  els.defaultBuyIn.value = state.defaultBuyIn;
+  els.defaultBuyInMethod.value = state.defaultBuyInMethod;
+
+  const search = (els.playerSearch.value || "").toLowerCase();
+  const filtered = state.players.filter((p)=>p.name.toLowerCase().includes(search));
+
+  buildPresetPlayers();
+  renderTopStats();
+  renderTabs(filtered);
+  renderPlayerView(filtered);
+  renderIssues();
+  renderSummary();
+  renderBit();
+  switchMainTab(state.mainTab);
+  saveState();
+}
+
+
+let toastTimer = null;
+function showToast(message, variant="info"){
+  const toastEl = document.getElementById("toast");
+  if(!toastEl) return;
+  toastEl.className = `toast ${variant}`;
+  toastEl.textContent = message;
+  toastEl.classList.add("show");
+  if(toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    toastEl.classList.remove("show");
+  }, 1800);
+}
+
+function addPreset(){
+  const name = (els.newPresetName.value || "").trim();
+  const method = els.newPresetMethod.value === "bit" ? "bit" : "cash";
+  if(!name) return;
+  if((state.customPresets || []).some((p)=>p.name===name)){
+    alert(t("saved_player_exists"));
+    return;
+  }
+  state.customPresets = [...(state.customPresets || []), {name, method}];
+  els.newPresetName.value = "";
+  render();
+  showToast(t("toast_saved_player"), "success");
+}
+
+function removePreset(name){
+  state.customPresets = (state.customPresets || []).filter((p)=>p.name!==name);
+  render();
+}
+
+function removePresetByIndex(index){
+  if (!confirm(t("confirm_remove_saved"))) return;
+  state.customPresets = (state.customPresets || []).filter((_, i)=>i !== index);
+  render();
+  showToast(t("toast_removed_player"), "danger");
+}
+
+function toggleLanguage(){
+  state.language = state.language === "he" ? "en" : "he";
+  render();
+}
+
+function addPlayer(){
+  if(state.gameFinished) return;
+  const name = els.newPlayerName.value.trim();
+  if(!name) return;
+  addPlayerWithName(name);
+  els.newPlayerName.value = "";
+  render();
+  showToast(state.language === "he" ? "שחקן נוסף למשחק" : "Player added to game", "success");
+}
+function addSelectedPlayers(){
+  if(state.gameFinished) return;
+  const rows = Array.from(els.presetPlayers.querySelectorAll('.preset-row'));
+  rows.forEach((row, idx) => {
+    const checkbox = row.querySelector('input[type="checkbox"]');
+    const select = row.querySelector('select');
+    if (checkbox && checkbox.checked) {
+      const name = checkbox.value;
+      const method = select && select.value === "bit" ? "bit" : "cash";
+      addPlayerWithName(name, method);
+      checkbox.checked = false;
+    }
+  });
+  state.mainTab = "game";
+  render();
+  showToast(t("toast_player_added"), "success");
+}
+function removePlayer(id){
+  if(state.gameFinished) return;
+  state.players = state.players.filter((p)=>p.id!==id);
+  if(state.activePlayerId === id) state.activePlayerId = state.players[0]?.id || null;
+  render();
+  showToast(state.language === "he" ? "שחקן הוסר מהמשחק" : "Player removed from game", "danger");
+}
+function addBuyIn(id, amount){
+  if(state.gameFinished) return;
+  const methodEl = document.getElementById(`method-${id}`);
+  const method = methodEl && methodEl.value === "bit" ? "bit" : "cash";
+  state.players = state.players.map((p)=>p.id===id ? {...p, buyIns:[...p.buyIns,{amount,method}]} : p);
+  state.activePlayerId = id;
+  render();
+}
+function addCustomBuyIn(id){
+  if(state.gameFinished) return;
+  const value = prompt(t("enter_amount"));
+  const amount = Number(value);
+  if(!Number.isFinite(amount) || amount<=0) return;
+  addBuyIn(id, amount);
+}
+function updateCashOut(id, value){
+  if(state.gameFinished) return;
+  state.players = state.players.map((p)=>p.id===id ? {...p, cashOut:value===""?"":Number(value)||0} : p);
+  state.activePlayerId = id;
+  render();
+}
+function updateFinalCash(id, value){
+  if(state.gameFinished) return;
+  state.players = state.players.map((p)=>p.id===id ? {...p, finalCash:Number(value)||0} : p);
+  state.activePlayerId = id;
+  render();
+}
+function openPlayer(id){
+  state.activePlayerId = id;
+  render();
+  const section = document.getElementById("playerView");
+  if(section) section.scrollIntoView({behavior:"smooth", block:"start"});
+}
+function finishGame(){
+  const issues = validateGame(state.players);
+  if(issues.length){ alert(t("cannot_finish")); return; }
+  state.gameFinished = true;
+  render();
+}
+function resetAll(){
+  if(!confirm(t("confirm_reset"))) return;
+  localStorage.removeItem(STORAGE_KEY);
+  state = clone(defaultState);
+  render();
+}
+
+buildPresetPlayers();
+
+els.addPlayerBtn.addEventListener("click", addPlayer);
+els.addSelectedPlayersBtn.addEventListener("click", addSelectedPlayers);
+els.addPresetBtn.addEventListener("click", addPreset);
+els.langToggleBtn.addEventListener("click", toggleLanguage);
+els.addPresetBtn.addEventListener("click", addPreset);
+els.langToggleBtn.addEventListener("click", toggleLanguage);
+els.saveNowBtn.addEventListener("click", () => {
+  saveState();
+  const old = els.saveNowBtn.textContent;
+  els.saveNowBtn.textContent = t("saved");
+  showToast(t("toast_game_saved"), "info");
+  setTimeout(()=>els.saveNowBtn.textContent=old,1200);
+});
+els.resetAllBtn.addEventListener("click", resetAll);
+els.finishGameBtn.addEventListener("click", finishGame);
+els.newPlayerName.addEventListener("keydown", (e)=>{ if(e.key==="Enter") addPlayer(); });
+if (els.newPresetName) els.newPresetName.addEventListener("keydown", (e)=>{ if(e.key==="Enter") addPreset(); });
+els.newPresetName.addEventListener("keydown", (e)=>{ if(e.key==="Enter") addPreset(); });
+els.playerSearch.addEventListener("input", render);
+els.gameName.addEventListener("change", (e)=>{ state.gameName = e.target.value; render(); });
+els.gameName.addEventListener("blur", (e)=>{ state.gameName = e.target.value; render(); });
+els.defaultBuyIn.addEventListener("input", (e)=>{ state.defaultBuyIn = Number(e.target.value)||0; saveState(); });
+els.defaultBuyInMethod.addEventListener("change", (e)=>{ state.defaultBuyInMethod = e.target.value==="bit"?"bit":"cash"; saveState(); });
+if (els.currencySelect) els.currencySelect.addEventListener("change", (e)=>{ state.currency = e.target.value || "ILS"; render(); });
+
+render();
+
+window.addBuyIn = addBuyIn;
+window.addCustomBuyIn = addCustomBuyIn;
+window.updateCashOut = updateCashOut;
+window.updateFinalCash = updateFinalCash;
+window.openPlayer = openPlayer;
+window.removePlayer = removePlayer;
+window.switchMainTab = switchMainTab;
+window.removePreset = removePreset;
+window.removePresetByIndex = removePresetByIndex;
+window.removePreset = removePreset;
+window.removePresetByIndex = removePresetByIndex;
+</script>
+<div id="toast" class="toast"></div>
+</body>
+</html>
