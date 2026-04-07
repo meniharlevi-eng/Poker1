@@ -311,6 +311,7 @@ html[dir="ltr"] .main-tabs, html[dir="ltr"] .tabs, html[dir="ltr"] .quick-action
       <div class="card-inner">
         <div class="card-title">📊 סיכום לפי שחקן</div>
         <div id="summaryList" class="summary-grid" style="display:grid"></div>
+        <div id="chapSummary" style="margin-top:14px"></div>
       </div>
     </section>
   </div>
@@ -488,6 +489,7 @@ const els = {
   potBreakdown: document.getElementById("potBreakdown"),
   issuesList: document.getElementById("issuesList"),
   summaryList: document.getElementById("summaryList"),
+  chapSummary: document.getElementById("chapSummary"),
   bitTransfers: document.getElementById("bitTransfers"),
   bitOutstanding: document.getElementById("bitOutstanding"),
   mainTabGame: document.getElementById("mainTabGame"),
@@ -553,6 +555,7 @@ function loadState(){
         name: p.name || "שחקן",
         buyIns: Array.isArray(p.buyIns) ? p.buyIns.map((b) => ({ amount: Number(b.amount) || 0, method: b.method === "bit" ? "bit" : "cash" })) : [],
         finalChips: p.finalChips === "" ? "" : (p.finalChips == null ? ((p.cashOut === "" ? "" : (Number(p.cashOut) || 0) * (Number(parsed.chipRatio) > 0 ? Number(parsed.chipRatio) : 1))) : (Number(p.finalChips) || 0)),
+        chapRemainder: p.chapRemainder === "" ? "" : (p.chapRemainder == null ? "" : (Number(p.chapRemainder) || 0)),
         cashOut: p.cashOut === "" ? "" : Number(p.cashOut) || 0,
         finalCash: Number(p.finalCash) || 0
       }))
@@ -586,6 +589,50 @@ function currencySymbol(){
   if(c === "GBP") return "£";
   return "₪";
 }
+function chipsBlockValue(){
+  const v = Number(state.chipsValue);
+  return v > 0 ? v : 1000;
+}
+function cashBlockValue(){
+  const v = Number(state.cashValue);
+  return v > 0 ? v : 50;
+}
+function regularBlocksFromChips(chips){
+  const block = chipsBlockValue();
+  return Math.floor((Number(chips) || 0) / block);
+}
+function chapRemainderChips(chips){
+  const block = chipsBlockValue();
+  const val = Number(chips) || 0;
+  return val > 0 ? (val % block) : 0;
+}
+function playerChapRemainder(p){
+  if (p == null) return 0;
+  if (p.chapRemainder === "" || p.chapRemainder == null) return 0;
+  return Number(p.chapRemainder) || 0;
+}
+function regularCashFromChips(chips){
+  return regularBlocksFromChips(chips) * cashBlockValue();
+}
+function isChapParticipantByPlayer(p){
+  return playerChapRemainder(p) > 0;
+}
+function chapParticipants(players){
+  return players
+    .map((p)=>({
+      id: p.id,
+      name: p.name,
+      remainder: playerChapRemainder(p)
+    }))
+    .filter((p)=>p.remainder > 0);
+}
+function chapPotValue(players){
+  const totalPot = players.reduce((s,p)=>s + totalBuyIn(p), 0);
+  const regularTotal = players.reduce((s,p)=>s + regularCashFromChips(Number(p.finalChips) || 0), 0);
+  const pot = totalPot - regularTotal;
+  return pot > 0 ? pot : 0;
+}
+
 function netResult(p){ return p.cashOut === "" ? null : (Number(p.cashOut)||0) - totalBuyIn(p); }
 function remainingBit(p){
   if(p.cashOut === "") return null;
@@ -644,7 +691,7 @@ const I18N = {
     chip_ratio_help: "הכנס כמות צ׳יפים וכמות מזומן, והמערכת תחשב את יחס ההמרה אוטומטית",
     chip_ratio_preview: "1 {currency} = {ratio} צ׳יפים",
     final_chips: "סכום סופי בצ'יפים",
-    converted_final_amount: "סכום סופי במזומן",
+    converted_final_amount: "מזומן סופי רגיל",
     new_player: "שחקן אורח",
     initial_buyin: "כניסה התחלתית",
     method: "אמצעי",
@@ -663,6 +710,17 @@ const I18N = {
     players: "שחקנים",
     total_chips: "סה״כ צ׳יפים",
     chips_word: "צ׳יפים",
+    chap: "צאפ",
+    chap_pot: "קופת צאפ",
+    chap_participants: "משתתפים בצאפ",
+    chap_remainder: "שארית לצאפ",
+    chap_remainder_help: "צ׳יפים שלא נכנסים לחלוקה הרגילה ולא משפיעים על המזומן הסופי הרגיל",
+    chap_regular_value: "שווי רגיל",
+    regular_cash_note: "מחושב רק לפי החלוקה הרגילה, בלי צאפ",
+    chap_from_total_pot: "מחושב מהקופה הכללית",
+    participates_in_chap: "משתתף בצאפ",
+    yes: "כן",
+    no: "לא",
     buyin_chips_est: "יקבל בערך",
     pot: "קופה",
     final: "סופי",
@@ -693,7 +751,7 @@ const I18N = {
     buyin_deleted: "הכניסה נמחקה",
     app_left: "נשאר לקבל דרך אפליקציה",
     final_amount: "סכום סופי",
-    final_cash: "מזומן שקיבל בסוף",
+    final_cash: "מזומן שקיבל בפועל",
     no_issues: "אין בעיות מזוהות",
     no_players: "אין עדיין שחקנים",
     no_app_transfers: "אין עדיין העברות באפליקציה",
@@ -763,6 +821,17 @@ const I18N = {
     players: "players",
     total_chips: "Total chips",
     chips_word: "chips",
+    chap: "Chap",
+    chap_pot: "Chap pot",
+    chap_participants: "Chap participants",
+    chap_remainder: "Chap remainder",
+    chap_remainder_help: "Chips that are not part of the regular payout and do not affect the regular final cash",
+    chap_regular_value: "Regular value",
+    regular_cash_note: "Calculated only from the regular payout, without chap",
+    chap_from_total_pot: "Calculated from the total pot",
+    participates_in_chap: "Participates in chap",
+    yes: "Yes",
+    no: "No",
     buyin_chips_est: "Will receive about",
     pot: "Pot",
     final: "Final",
@@ -920,10 +989,22 @@ function applyLanguageShell(){
 function validateGame(players){
   const totalIn = players.reduce((s,p)=>s+totalBuyIn(p),0);
   const totalOut = players.reduce((s,p)=>s+(p.cashOut===""?0:Number(p.cashOut)||0),0);
+  const chapPot = chapPotValue(players);
+  const accountedTotal = totalOut + chapPot;
   const issues = [];
-  if(players.length && players.some((p)=>p.cashOut==="")) issues.push("יש שחקנים בלי סכום סופי.");
-  if(players.length && Math.abs(totalIn-totalOut) > 0.5) issues.push(`סה״כ הכניסות (${formatCurrency(totalIn)}) לא שווה לסה״כ הסכומים הסופיים (${formatCurrency(totalOut)}).`);
-  if(players.some((p)=>p.cashOut !== "" && (Number(p.finalCash)||0) > (Number(p.cashOut)||0)+0.01)) issues.push("יש שחקנים שסכום המזומן שקיבלו גבוה מהסכום הסופי שלהם.");
+
+  if(players.length && players.some((p)=>p.cashOut==="")) {
+    issues.push("יש שחקנים בלי סכום סופי.");
+  }
+
+  if(players.length && Math.abs(totalIn-accountedTotal) > 0.5) {
+    issues.push(`סה״כ הכניסות (${formatCurrency(totalIn)}) לא שווה לסה״כ החלוקה הרגילה והצאפ (${formatCurrency(accountedTotal)}).`);
+  }
+
+  if(players.some((p)=>p.cashOut !== "" && (Number(p.finalCash)||0) > (Number(p.cashOut)||0)+0.01)) {
+    issues.push("יש שחקנים שסכום המזומן שקיבלו גבוה מהסכום הסופי הרגיל שלהם.");
+  }
+
   return issues;
 }
 
@@ -1069,6 +1150,8 @@ function renderPlayerView(filtered){
   const finalCash = Number(player.finalCash)||0;
   const appLeft = remainingBit(player);
   const finalChips = player.finalChips === "" ? "" : Number(player.finalChips)||0;
+  const chapRemainder = playerChapRemainder(player);
+  const chapParticipant = isChapParticipantByPlayer(player);
   const chips50 = Math.round(cashToChips(50));
   const chips100 = Math.round(cashToChips(100));
   const chips200 = Math.round(cashToChips(200));
@@ -1124,6 +1207,8 @@ function renderPlayerView(filtered){
         <div class="chips">
           <span class="chip">${t("app")}: ${formatCurrency(totalByMethod(player,"bit"))}</span>
           <span class="chip">${t("cash")}: ${formatCurrency(totalByMethod(player,"cash"))}</span>
+          ${player.cashOut==="" ? "" : `<span class="chip">${t("chap_regular_value")}: ${formatCurrency(cashOut)}</span>`}
+          ${player.cashOut==="" ? "" : `<span class="chip">${t("participates_in_chap")}: ${chapParticipant ? t("yes") : t("no")}</span>`}
           ${player.cashOut==="" ? "" : `<span class="chip">${t("app_left")}: ${formatCurrency(appLeft)}</span>`}
         </div>
 
@@ -1136,6 +1221,17 @@ function renderPlayerView(filtered){
           <div class="field">
             <label>${t("converted_final_amount")}</label>
             <input type="text" value="${cashOut===""?"":formatCurrency(cashOut)}" placeholder="-" readonly>
+            <div class="meta-label" style="margin-top:6px">${t("regular_cash_note")}</div>
+          </div>
+          <div class="field">
+            <label>${t("chap_remainder")}</label>
+            <input type="number" value="${player.chapRemainder === '' ? '' : chapRemainder}" placeholder="0" ${state.gameFinished?"disabled":""}
+              onchange="updateChapRemainder('${player.id}', this.value)" onblur="updateChapRemainder('${player.id}', this.value)">
+            <div class="meta-label" style="margin-top:6px">${t("chap_remainder_help")}</div>
+          </div>
+          <div class="field">
+            <label>${t("participates_in_chap")}</label>
+            <input type="text" value="${chapParticipant ? t('yes') : t('no')}" readonly>
           </div>
           <div class="field">
             <label>${t("final_cash")}</label>
@@ -1156,10 +1252,10 @@ function renderIssues(){
   const issues = validateGame(state.players).map((x) => {
     if (state.language !== "en") return x;
     return x
-      .replace("יש שחקנים בלי סכום סופי.", "Some players are missing a final stack amount.")
-      .replace("יש שחקנים שסכום המזומן שקיבלו גבוה מהסכום הסופי שלהם.", "Some players have cash received that is higher than their final stack amount.")
+      .replace("יש שחקנים בלי סכום סופי.", "Some players are missing a final regular cash amount.")
+      .replace("יש שחקנים שסכום המזומן שקיבלו גבוה מהסכום הסופי הרגיל שלהם.", "Some players have cash actually received that is higher than their regular final cash.")
       .replace("סה״כ הכניסות", "Total buy-ins")
-      .replace("לא שווה לסה״כ הסכומים הסופיים", "does not match total final stack amounts");
+      .replace("לא שווה לסה״כ החלוקה הרגילה והצאפ", "does not match the total regular payout plus chap");
   });
   els.issuesList.innerHTML = issues.length ? issues.map((x)=>`<div class="issue">${x}</div>`).join("") : `<div class="empty">${t("no_issues")}</div>`;
 }
@@ -1167,18 +1263,66 @@ function renderIssues(){
 function renderSummary(){
   els.summaryList.innerHTML = state.players.length
     ? state.players.map((p)=>{
-      const invested = totalBuyIn(p), cashOut = p.cashOut===""?0:Number(p.cashOut)||0, net = netResult(p), cash = Number(p.finalCash)||0, appLeft = remainingBit(p);
+      const invested = totalBuyIn(p);
+      const cashOut = p.cashOut===""?0:Number(p.cashOut)||0;
+      const net = netResult(p);
+      const cash = Number(p.finalCash)||0;
+      const appLeft = remainingBit(p);
+      const chapRemainder = playerChapRemainder(p);
+      const chapParticipant = isChapParticipantByPlayer(p);
+      const regularValue = p.finalChips === "" ? 0 : regularCashFromChips(Number(p.finalChips) || 0);
+
       return `
         <div class="summary-card">
           <div><div style="font-weight:800">${escapeHtml(p.name)}</div></div>
-          <div><div class="meta-label">${t("invested")}</div><div>${formatCurrency(invested)}</div><div class="meta-label">${t("app")} ${formatCurrency(totalByMethod(p,"bit"))} • ${t("cash")} ${formatCurrency(totalByMethod(p,"cash"))}</div></div>
-          <div><div class="meta-label">${t("final_amount")}</div><div>${p.cashOut===""?"-":formatCurrency(cashOut)}</div></div>
-          <div><div class="meta-label">${t("profit_loss")}</div><div class="${net===null||net>=0?'good':'bad'}" style="font-weight:800">${net===null?'-':`${net>=0?'+':'-'}${formatCurrency(Math.abs(net))}`}</div></div>
-          <div><div class="meta-label">${t("cash_received_app_left")}</div><div>${p.cashOut===""?"-":`${formatCurrency(cash)} / ${formatCurrency(appLeft)}`}</div></div>
+          <div>
+            <div class="meta-label">${t("invested")}</div>
+            <div>${formatCurrency(invested)}</div>
+            <div class="meta-label">${t("app")} ${formatCurrency(totalByMethod(p,"bit"))} • ${t("cash")} ${formatCurrency(totalByMethod(p,"cash"))}</div>
+          </div>
+          <div>
+            <div class="meta-label">${t("converted_final_amount")}</div>
+            <div>${p.cashOut===""?"-":formatCurrency(cashOut)}</div>
+            <div class="meta-label">${t("regular_cash_note")}</div>
+          </div>
+          <div>
+            <div class="meta-label">${t("profit_loss")}</div>
+            <div class="${net===null||net>=0?'good':'bad'}" style="font-weight:800">${net===null?'-':`${net>=0?'+':'-'}${formatCurrency(Math.abs(net))}`}</div>
+          </div>
+          <div>
+            <div class="meta-label">${t("cash_received_app_left")}</div>
+            <div>${p.cashOut===""?"-":`${formatCurrency(cash)} / ${formatCurrency(appLeft)}`}</div>
+          </div>
+          <div>
+            <div class="meta-label">${t("chap_remainder")}</div>
+            <div>${p.chapRemainder === "" ? "-" : `${chapRemainder.toLocaleString()} ${t("chips_word")}`}</div>
+            <div class="meta-label">${t("participates_in_chap")}: ${p.chapRemainder === "" ? t("no") : (chapParticipant ? t("yes") : t("no"))}</div>
+          </div>
         </div>
       `;
     }).join("")
     : `<div class="empty">${t("no_players")}</div>`;
+
+  const participants = chapParticipants(state.players);
+  const chapPot = chapPotValue(state.players);
+  els.chapSummary.innerHTML = `
+    <div class="card">
+      <div class="card-inner">
+        <div class="card-title">🟡 ${t("chap")}</div>
+        <div class="stats-grid">
+          <div class="stat-box"><div class="meta-label">${t("chap_pot")}</div><div class="amount">${formatCurrency(chapPot)}</div></div>
+          <div class="stat-box"><div class="meta-label">${t("chap_participants")}</div><div class="amount">${participants.length}</div></div>
+          <div class="stat-box"><div class="meta-label">${t("chap_from_total_pot")}</div><div class="amount">${formatCurrency(state.players.reduce((s,p)=>s+totalBuyIn(p),0))}</div></div>
+        </div>
+        <div class="chips" style="margin-top:12px">
+          ${participants.length
+            ? participants.map((p)=>`<span class="chip">${escapeHtml(p.name)} • ${p.remainder.toLocaleString()} ${t("chips_word")}</span>`).join("")
+            : `<span class="chip">${state.language === "he" ? "אין משתתפים בצאפ כרגע" : "No chap participants yet"}</span>`
+          }
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 function renderBit(){
@@ -1430,13 +1574,19 @@ function updateCashOut(id, value){
 }
 function updateFinalChips(id, value){
   if(state.gameFinished) return;
-  state.players = state.players.map((p)=>p.id===id ? {...p, finalChips:value===""?"":Number(value)||0, cashOut:value===""?"":chipsToCash(Number(value)||0)} : p);
+  state.players = state.players.map((p)=>p.id===id ? {...p, finalChips:value===""?"":Number(value)||0, cashOut:value===""?"":regularCashFromChips(Number(value)||0)} : p);
   state.activePlayerId = id;
   render();
 }
 function updateFinalCash(id, value){
   if(state.gameFinished) return;
   state.players = state.players.map((p)=>p.id===id ? {...p, finalCash:Number(value)||0} : p);
+  state.activePlayerId = id;
+  render();
+}
+function updateChapRemainder(id, value){
+  if(state.gameFinished) return;
+  state.players = state.players.map((p)=>p.id===id ? {...p, chapRemainder:value===""?"":Number(value)||0} : p);
   state.activePlayerId = id;
   render();
 }
